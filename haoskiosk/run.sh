@@ -340,13 +340,14 @@ fi
 bashio::log.info "Configuring touch inputs for ROTATE_DISPLAY=${ROTATE_DISPLAY}..."
 
 case "${ROTATE_DISPLAY,,}" in
+# LEFT RIGHT REVERSED. INVERTED and Standard unchanged.
     right) 
-        # Standard 90 degrees Clockwise
-        TOUCH_MATRIX="0 -1 1 1 0 0 0 0 1" 
-        ;;
-    left) 
         # Standard 90 degrees Counter-Clockwise
         TOUCH_MATRIX="0 1 0 -1 0 1 0 0 1" 
+        ;;
+    left) 
+        # Standard 90 degrees Clockwise
+        TOUCH_MATRIX="0 -1 1 1 0 0 0 0 1" 
         ;;
     inverted) 
         # Standard 180 degrees
