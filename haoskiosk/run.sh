@@ -195,19 +195,24 @@ echo "export DBUS_SESSION_BUS_ADDRESS='$DBUS_SESSION_BUS_ADDRESS'" >> "$HOME/.pr
 # Note: need to use the version of 'mount' in util-linux, not busybox
 # Note: Do *not* later remount as 'ro' since that affect the root fs and
 #       in particular will block HAOS updates
+# This preserves the original developer's logic for Raspberry Pi/ARM devices but safely bypasses the /dev/tty0 deletion for your amd64 (x86_64) machine.
 if [ -e "/dev/tty0" ]; then
-    bashio::log.info "Attempting to remount /dev as 'rw' so we can (temporarily) delete /dev/tty0..."
-    mount -o remount,rw /dev
-    if ! mount -o remount,rw /dev ; then
-        bashio::log.error "Failed to remount /dev as read-write..."
-        exit 1
+    if [ "$ARCH" = "amd64" ] || [ "$ARCH" = "i386" ]; then
+        bashio::log.info "amd64 architecture detected: Skipping /dev/tty0 deletion to prevent host X11 conflicts."
+    else
+        bashio::log.info "Attempting to remount /dev as 'rw' so we can (temporarily) delete /dev/tty0..."
+        mount -o remount,rw /dev
+        if ! mount -o remount,rw /dev ; then
+            bashio::log.error "Failed to remount /dev as read-write..."
+            exit 1
+        fi
+        if  ! rm -f /dev/tty0 ; then
+            bashio::log.error "Failed to delete /dev/tty0..."
+            exit 1
+        fi
+        TTY0_DELETED=1
+        bashio::log.info "Deleted /dev/tty0 successfully..."
     fi
-    if  ! rm -f /dev/tty0 ; then
-        bashio::log.error "Failed to delete /dev/tty0..."
-        exit 1
-    fi
-    TTY0_DELETED=1
-    bashio::log.info "Deleted /dev/tty0 successfully..."
 fi
 
 #### Start udev (used by X)
@@ -328,6 +333,17 @@ cat /etc/X11/xorg.conf
 printf '%*s\n' 80 '' | tr ' ' '#'  #Trailer
 echo "."
 
+# ----- NEW: Clean up stale lock files before starting -----
+bashio::log.info "Cleaning up any stale X11 lock files and sockets..."
+rm -f /tmp/.X0-lock
+rm -rf /tmp/.X11-unix/X0
+
+# ----- NEW: Setup Xorg log streaming -----
+mkdir -p /var/log
+touch /var/log/Xorg.0.log
+tail -f /var/log/Xorg.0.log &
+TAIL_PID=$!
+
 bashio::log.info "Starting X on DISPLAY=$DISPLAY..."
 NOCURSOR=""
 [ "$CURSOR_TIMEOUT" -lt 0 ] && NOCURSOR="-nocursor"  #No cursor if <0
@@ -352,10 +368,13 @@ fi
 
 if ! xset q >/dev/null 2>&1; then
     bashio::log.error "Error: X server failed to start within $XSTARTUP seconds."
+    # ----- NEW: Dump the log if X fails so you can see exactly why -----
+    bashio::log.error "Dumping /var/log/Xorg.0.log to UI:"
+    cat /var/log/Xorg.0.log
+    kill $TAIL_PID 2>/dev/null || true
     exit 1
 fi
 bashio::log.info "X server started successfully after $i seconds..."
-
 # List xinput devices
 echo "xinput list:"
 xinput list | sed 's/^/  /'
