@@ -306,6 +306,7 @@ if [ -z "$selected_card" ]; then
     exit 1
 fi
 
+
 #### Start Xorg in the background
 rm -rf /tmp/.X*-lock  #Cleanup old versions
 
@@ -325,6 +326,27 @@ else
         echo -e "\n#\n${XORG_CONF}" >> /etc/X11/xorg.conf
     fi
 fi
+
+# ----- NEW: Universal Dynamic Touchscreen Rotation -----
+bashio::log.info "Configuring touch inputs for ROTATE_DISPLAY=${ROTATE_DISPLAY}..."
+
+case "${ROTATE_DISPLAY,,}" in
+    right) TOUCH_MATRIX="0 1 0 -1 0 1 0 0 1" ;;
+    left) TOUCH_MATRIX="0 -1 1 1 0 0 0 0 1" ;;
+    inverted) TOUCH_MATRIX="-1 0 1 0 -1 1 0 0 1" ;;
+    *) TOUCH_MATRIX="1 0 0 0 1 0 0 0 1" ;;
+esac
+
+cat <<EOF >> /etc/X11/xorg.conf
+
+# Dynamically generated Touchscreen Transformation based on ROTATE_DISPLAY
+Section "InputClass"
+    Identifier "Universal Touchscreen Transformation"
+    MatchIsTouchscreen "on"
+    Driver "libinput"
+    Option "TransformationMatrix" "${TOUCH_MATRIX}"
+EndSection
+EOF
 
 # Print out current 'xorg.conf'
 echo "."  #Almost blank line (Note totally blank or white space lines are swallowed)
