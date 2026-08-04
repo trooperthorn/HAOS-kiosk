@@ -33,23 +33,6 @@ with the display attached
 **NOTE:** Should support any standard mouse, touchscreen, keypad and
 touchpad so long as its `/dev/input/eventN` number is less than 25.
 
-**NOTE:** If you encounter issues with the Add-on, please first check the
-HAOSKiosk github
-[issues page](https://github.com/puterboy/HAOS-kiosk/issues) (open and
-closed), then try the testing branch (add the following url to the
-repository: https://github.com/puterboy/HAOS-kiosk#testing). If still
-please file an
-[issue on github](https://github.com/puterboy/HAOS-kiosk/issues) and
-\*\*include full details of your setup (including computer hardware and
-display type details)and what you did along with a complete log.
-
-Note you can use the `screenshot` REST API or keybinding (`Ctl+Alt+k`) or
-touch gesture (Quadruple 3 finger tap) to save a screenshot to
-`/media/screenshots`
-
-### If you appreciate my efforts:
-
-[![Buy Me a Coffee](https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png)](https://www.buymeacoffee.com/puterboy)
 
 ______________________________________________________________________
 
@@ -57,7 +40,7 @@ ______________________________________________________________________
 
 1. Click the **ADD ADD-ON REPOSITORY** button below.
 
-   [![Open your Home Assistant instance and show the add Add-on repository dialog with a specific repository URL pre-filled.](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fputerboy%2FHAOS-kiosk)
+   [![Open your Home Assistant instance and show the add Add-on repository dialog with a specific repository URL pre-filled.](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Ftrooperthorn%2FHAOS-kiosk)
 
    - Click **Add → Close** (You might need to enter the **internal IP
      address** of your Home Assistant instance first) *or* go to the
@@ -268,6 +251,10 @@ blacklisted as dangerous (otherwise, whitelist overrides path restrictions
 and internal blacklist).
 
 The pre-defined command blacklist includes commands like:
+xset|xdotool|luakit
+
+REMOVED FOR SECURITY. ADD AT OWN RISK. This was in the original and was never needed to run:
+cat|date|dbus-send|echo|false|grep|head|ls|luakit|notify-send|ping|ping6|ps|pstree|sleep|tail|test|top|tree|true|xdotool|xset
 
 ```
    python
