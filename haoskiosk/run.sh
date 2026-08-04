@@ -794,27 +794,30 @@ if [ "$DEBUG_MODE" != true ]; then
         bashio::log.info "Launched Luakit browser (PID=$!)"
     fi
 
-    # ----- NEW: Updated Process Monitor with Watchdog Heartbeat -----
+    # ----- NEW: Optimized Process Monitor & Heartbeat -----
     count=0
     failed_heartbeats=0
+    loop_cycle=0
     
-    while true; do  # Loop every 5 seconds
+    while true; do  # Fast loop: Every 5 seconds
+        loop_cycle=$((loop_cycle + 1))
         
-        # 1. Check if the browser process still exists
+        # 1. QUICK CHECK: Does the browser process still exist? (Near-zero overhead)
         if pgrep -f "$BROWSER_PROCESS" > /dev/null 2>&1; then
             count=0
             
-            # 2. If using Chromium, check if the rendering engine is actually responsive
-            if [ "${BROWSER,,}" = "chromium" ]; then
-                # Ping the debug port. Timeout after 2 seconds.
-                if wget -q -O - -T 2 http://localhost:9222/json > /dev/null 2>&1; then
-                    failed_heartbeats=0 # Reset on success
+            # 2. DEEP CHECK: Only ping the Chromium web engine every 60 cycles (5 minutes)
+            if [ "${BROWSER,,}" = "chromium" ] && [ $((loop_cycle % 60)) -eq 0 ]; then
+                
+                # Ping the debug port. Timeout after 5 seconds.
+                if wget -q -O - -T 5 http://localhost:9222/json > /dev/null 2>&1; then
+                    failed_heartbeats=0 # Engine is healthy, reset counter
                 else
                     failed_heartbeats=$((failed_heartbeats + 1))
                     
-                    # If it fails 6 times in a row (30 seconds), it's completely hung
-                    if [ $failed_heartbeats -ge 6 ]; then
-                        bashio::log.error "CRITICAL: Chromium rendering engine is frozen or unresponsive!"
+                    # If it fails 2 consecutive 5-minute checks (10 minutes total)
+                    if [ $failed_heartbeats -ge 2 ]; then
+                        bashio::log.error "CRITICAL: Chromium rendering engine has failed two consecutive 5-minute health checks!"
                         bashio::log.error "Triggering intentional crash so HA Watchdog can reboot the Add-on..."
                         exit 1 # Kills the script, crashing the container to trigger Watchdog
                     fi
@@ -822,11 +825,13 @@ if [ "$DEBUG_MODE" != true ]; then
             fi
             
         else
-            # Process doesn't exist
+            # Process completely died/closed
             count=$((count + 1))
         fi
         
-        [ $count -ge 3 ] && break # Exit if process is fully gone for 15 seconds
+        # If the process is fully gone for 15 seconds (3 fast cycles), exit gracefully
+        [ $count -ge 3 ] && break 
+        
         sleep 5
     done
     
