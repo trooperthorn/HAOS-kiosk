@@ -161,11 +161,18 @@ fi
 ################################################################################
 ### GTK and DBUS-related environment variables to improve stability
 
-export NO_AT_BRIDGE=1                 # Stop GTK from touching at-spi bus
-export GTK_USE_PORTAL=0               # Disable portals
-export GIO_USE_VFS=local              # Local-only GIO
-export DBUS_SESSION_BUS_TIMEOUT=5000  # Shorten DBUS timeouts
-export GTK_CSD=0                      # Disable client side decorations (???)
+################################################################################
+### GTK and DBUS-related environment variables to improve stability
+
+# ----- Accessibility Disablers (Silences AT-SPI Log Spam) -----
+export NO_AT_BRIDGE=1                 # GTK3: Stop touching at-spi bus
+export GTK_A11Y=none                  # GTK4: Completely disable accessibility
+
+# ----- Desktop Integration Disablers (Speeds up container boot) -----
+export GTK_USE_PORTAL=0               # Disable xdg-desktop-portal (we don't have file pickers)
+export GIO_USE_VFS=local              # Force local-only file system (stops it looking for network drives)
+export DBUS_SESSION_BUS_TIMEOUT=5000  # Shorten DBUS timeouts so missing services don't hang the boot
+export GTK_CSD=0                      # Disable Client-Side Decorations (Ensures no accidental title bars or window borders are drawn in Kiosk mode)
 ################################################################################
 #### Start Dbus
 # Start dbus-daemon to Avoids waiting for DBUS timeouts (e.g., luakit)
@@ -753,6 +760,11 @@ if [ "$DEBUG_MODE" != true ]; then
             --disable-features=Accessibility \
             --enable-logging=stderr \
             "$HA_URL/$HA_DASHBOARD" 2>&1 | while read -r line; do
+                
+                # ----- NEW: Filter out known Chromium log spam -----
+                if [[ "$line" == *"AT-SPI:"* ]] || [[ "$line" == *"Glycin running without sandbox"* ]] || [[ "$line" == *"atk-bridge"* ]]; then
+                    continue
+                fi
                 
                 # Pass the standard log line through
                 echo "$line"
