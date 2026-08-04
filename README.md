@@ -2,7 +2,8 @@
 
 Display HA dashboards in kiosk mode directly on your HAOS server.
 
-## Author: Jeff Kosowsky (version: 1.3.2, April 2026)
+## Original Author: Jeff Kosowsky (version: 1.3.2, April 2026)
+## Updated for x86 AMD64 TrooperThorn (v: 1.3.2.1 August 2026)
 
 ## Description
 
