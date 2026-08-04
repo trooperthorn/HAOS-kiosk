@@ -744,6 +744,7 @@ if [ "$DEBUG_MODE" != true ]; then
        # Convert HAOSKiosk ZOOM_LEVEL (e.g., 100) to Chromium scale factor (e.g., 1.0)
         CHROMIUM_ZOOM=$(awk "BEGIN {print $ZOOM_LEVEL/100}")
 
+
         # Launch Chromium and intercept its logs to find the Browser Mod ID
         chromium-browser \
             --kiosk \
@@ -759,6 +760,7 @@ if [ "$DEBUG_MODE" != true ]; then
             --user-data-dir=/tmp/chromium \
             --disable-features=Accessibility \
             --enable-logging=stderr \
+            --remote-debugging-port=9222 \
             "$HA_URL/$HA_DASHBOARD" 2>&1 | while read -r line; do
                 
                 # ----- NEW: Filter out known Chromium log spam -----
@@ -792,18 +794,42 @@ if [ "$DEBUG_MODE" != true ]; then
         bashio::log.info "Launched Luakit browser (PID=$!)"
     fi
 
-    # ----- NEW: Updated Process Monitor -----
+    # ----- NEW: Updated Process Monitor with Watchdog Heartbeat -----
     count=0
-    while true; do  # Wait for all browser processes to exit
-        # REMOVED the strict "^" and space so it matches absolute paths
+    failed_heartbeats=0
+    
+    while true; do  # Loop every 5 seconds
+        
+        # 1. Check if the browser process still exists
         if pgrep -f "$BROWSER_PROCESS" > /dev/null 2>&1; then
             count=0
+            
+            # 2. If using Chromium, check if the rendering engine is actually responsive
+            if [ "${BROWSER,,}" = "chromium" ]; then
+                # Ping the debug port. Timeout after 2 seconds.
+                if wget -q -O - -T 2 http://localhost:9222/json > /dev/null 2>&1; then
+                    failed_heartbeats=0 # Reset on success
+                else
+                    failed_heartbeats=$((failed_heartbeats + 1))
+                    
+                    # If it fails 6 times in a row (30 seconds), it's completely hung
+                    if [ $failed_heartbeats -ge 6 ]; then
+                        bashio::log.error "CRITICAL: Chromium rendering engine is frozen or unresponsive!"
+                        bashio::log.error "Triggering intentional crash so HA Watchdog can reboot the Add-on..."
+                        exit 1 # Kills the script, crashing the container to trigger Watchdog
+                    fi
+                fi
+            fi
+            
         else
+            # Process doesn't exist
             count=$((count + 1))
         fi
-        [ $count -ge 3 ] && break # Exit if no browser process for at least 2*5=10 seconds
+        
+        [ $count -ge 3 ] && break # Exit if process is fully gone for 15 seconds
         sleep 5
     done
+    
     bashio::log.info "No $BROWSER_PROCESS instances remaining... exiting 'run.sh'..."
 
 else  ### Debug mode
