@@ -63,22 +63,19 @@ RUN apk update && apk add --no-cache \
 ### VNC (for debugging) - run: x11vnc -display :0 -forever & \
       x11vnc \
 # Browser
-#    luakit \
-   && apk add --no-cache --repository=https://dl-cdn.alpinelinux.org/alpine/v3.21/community luakit=2.3.6-r0 \
-   # ... (previous apk add commands for xorg, etc) ...
    && ARCH=$(uname -m) \
    && echo "Building for architecture: $ARCH" \
    && if [ "$ARCH" = "x86_64" ]; then \
         # ----- x86_64 (Intel/AMD) -----
-        # Pull latest Chromium and Luakit directly from standard repos
-       apk add --no-cache chromium luakit; \
+        # Pull latest Chromium, Luakit, and required fonts
+        apk add --no-cache chromium luakit ttf-freefont font-liberation; \
    elif [ "$ARCH" = "aarch64" ]; then \
         # ----- aarch64 (Raspberry Pi 4/5) -----
-       apk add --no-cache chromium luakit; \
+        apk add --no-cache chromium luakit ttf-freefont font-liberation; \
    else \
         # ----- Fallback for older 32-bit ARM (armv7) -----
-       echo "Falling back to Luakit-only for $ARCH" \
-       && apk add --no-cache luakit; \
+        echo "Falling back to Luakit-only for $ARCH" \
+        && apk add --no-cache luakit ttf-freefont font-liberation; \
    fi \
    && rm -rf /var/cache/apk/*
 
