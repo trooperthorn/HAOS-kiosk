@@ -2,7 +2,7 @@
 
 Display HA dashboards in kiosk mode directly on your HAOS server.
 
-## Author: Jeff Kosowsky (version: 1.3.2, April 2026)
+## Author: TrooperThorn (version: 1.3.2.1, August 2026)
 
 ## Description
 
@@ -32,25 +32,7 @@ with the display attached
 **NOTE:** Should support any standard mouse, touchscreen, keypad and
 touchpad so long as its `/dev/input/eventN` number is less than 25.
 
-**NOTE:** If you encounter issues with the Add-on, please first check the
-HAOSKiosk github
-[issues page](https://github.com/puterboy/HAOS-kiosk/issues) (open and
-closed), then try the testing branch (add the following url to the
-repository: https://github.com/puterboy/HAOS-kiosk#testing). If still
-please file an
-[issue on github](https://github.com/puterboy/HAOS-kiosk/issues) and
-\*\*include full details of your setup (including computer hardware and
-display type details)and what you did along with a complete log.
 
-Note you can use the `screenshot` REST API or keybinding (`Ctl+Alt+k`) or
-touch gesture (Quadruple 3 finger tap) to save a screenshot to
-`/media/screenshots`
-
-### If you appreciate my efforts:
-
-[![Buy Me a Coffee](https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png)](https://www.buymeacoffee.com/puterboy)
-
-______________________________________________________________________
 
 ## Installation
 
