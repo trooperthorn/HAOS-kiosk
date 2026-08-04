@@ -1,17 +1,17 @@
-# HAOS-kiosk v 1.3.2.2 Chromium release.
+# HAOS-kiosk v 1.3.2.3 Chromium release with support for BrowserMod
 
 Display HA dashboards in kiosk mode directly on your HAOS server.
 
-## Author: TrooperThorn (version: 1.3.2.2, August 2026)
-
-Please see the display-kiosk-theme.yaml for a theme specific for rotated displays. This will fix the popup issue with some themes.
+## Original Author: Jeff Kosowsky (version: 1.3.2, April 2026)
+## Updated for x86 AMD64 TrooperThorn (v: 1.3.2.3 August 2026)
 
 ## Description
 
 Launches X-Windows on local HAOS server followed by OpenBox window manager
-and Luakit browser starting with your configured default Home Assistant
+and Chrome or Luakit browser starting with your configured default Home Assistant
 dashboard.
 
+- Designed for Touchscreens directly attached to Home Assistant Server.
 - Standard mouse, touchscreen, and keyboard interactions should work
   automatically as well as audio
 - Supports touchscreens gestures, screen rotation, and onscreen keyboard
@@ -35,18 +35,19 @@ with the display attached
 touchpad so long as its `/dev/input/eventN` number is less than 25.
 
 
+______________________________________________________________________
 
 ## Installation
 
 1. Click the **ADD ADD-ON REPOSITORY** button below.
 
-   [![Open your Home Assistant instance and show the add Add-on repository dialog with a specific repository URL pre-filled.](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fputerboy%2FHAOS-kiosk)
+   [![Open your Home Assistant instance and show the add Add-on repository dialog with a specific repository URL pre-filled.](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Ftrooperthorn%2FHAOS-kiosk)
 
    - Click **Add → Close** (You might need to enter the **internal IP
      address** of your Home Assistant instance first) *or* go to the
      **Add-on store**.
    - Click **⋮ → Repositories**
-   - Fill in `https://github.com/puterboy/HAOS-kiosk`
+   - Fill in `https://github.com/trooperthorn/HAOS-kiosk`
    - Click **Add → Close**
 
 2. Click on the Add-on, press **Install** and wait until the Add-on is
@@ -60,12 +61,15 @@ touchpad so long as its `/dev/input/eventN` number is less than 25.
 **If you are having trouble installing the add-on or getting displays and
 touchscreens working, please see the **TROUBLESHOOTING** section below as
 well as the github issues page
-(https://github.com/puterboy/HAOS-kiosk/issues) as many common issues have
+(https://github.com/trooperthorn/HAOS-kiosk/issues) as many common issues have
 already been addressed and resolved**
 
 ______________________________________________________________________
 
 ## Configuration Options
+
+Select Chrome or Lua. 
+USE Lua if arm32.
 
 ### HA Username [required]
 
@@ -251,6 +255,10 @@ blacklisted as dangerous (otherwise, whitelist overrides path restrictions
 and internal blacklist).
 
 The pre-defined command blacklist includes commands like:
+xset|xdotool|luakit
+
+REMOVED FOR SECURITY. ADD AT OWN RISK. This was in the original and was never needed to run:
+cat|date|dbus-send|echo|false|grep|head|ls|luakit|notify-send|ping|ping6|ps|pstree|sleep|tail|test|top|tree|true|xdotool|xset
 
 ```
    python
