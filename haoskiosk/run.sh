@@ -82,7 +82,7 @@ trap cleanup HUP INT QUIT ABRT TERM EXIT
 
 ################################################################################
 #### Variables
-BROWSER="luakit"
+# BROWSER="luakit"  DENIED, Lua is not a good browser.
 BROWSER_FLAGS=
 
 ################################################################################
@@ -150,6 +150,7 @@ load_config_var REST_BEARER_TOKEN "" 1  # Mask token in log
 load_config_var COMMAND_WHITELIST "^$"  # Default is no commands allowed
 load_config_var DEBUG_MODE false
 load_config_var VNC_SERVER ""  1 #Mask password in log
+load_config_var BROWSER "chromium"
 
 # Validate environment variables set by config.yaml
 if [ -z "$HA_USERNAME" ] || [ -z "$HA_PASSWORD" ]; then
@@ -709,15 +710,39 @@ if [ -n "$VNC_SERVER" ]; then
     x11vnc $X11VNC_OPTS 2> >(grep -v 'The VNC desktop is:' >&2)
 fi
 
+
 #### Start browser (or debug mode)  and wait/sleep
 if [ "$DEBUG_MODE" != true ]; then
-    ### Run browser in the background and wait for process to exit
-    $BROWSER ${BROWSER_FLAGS:+$BROWSER_FLAGS} "$HA_URL/$HA_DASHBOARD" &
-    bashio::log.info "Launching $BROWSER browser(PID=$!): $HA_URL/$HA_DASHBOARD"
+    
+    # ----- NEW: Dynamic Browser Launch Logic -----
+    if [ "${BROWSER,,}" = "chromium" ] && command -v chromium-browser >/dev/null 2>&1; then
+        bashio::log.info "Launching Chromium browser..."
+        BROWSER_PROCESS="chromium-browser"
+        chromium-browser \
+            --kiosk \
+            --start-fullscreen \
+            --no-sandbox \
+            --disable-dev-shm-usage \
+            --disable-infobars \
+            --no-first-run \
+            --ignore-certificate-errors \
+            --disable-session-crashed-bubble \
+            --autoplay-policy=no-user-gesture-required \
+            "$HA_URL/$HA_DASHBOARD" &
+        bashio::log.info "Launched Chromium (PID=$!)"
+    else
+        if [ "${BROWSER,,}" = "chromium" ]; then
+            bashio::log.warning "Chromium requested but not installed. Falling back to Luakit."
+        fi
+        BROWSER_PROCESS="luakit"
+        luakit ${BROWSER_FLAGS:+$BROWSER_FLAGS} "$HA_URL/$HA_DASHBOARD" &
+        bashio::log.info "Launched Luakit browser (PID=$!)"
+    fi
 
+    # ----- NEW: Updated Process Monitor -----
     count=0
     while true; do  # Wait for all browser processes to exit
-        if pgrep -f -- "^$BROWSER " > /dev/null 2>&1; then
+        if pgrep -f -- "^$BROWSER_PROCESS " > /dev/null 2>&1; then
             count=0
         else
             count=$((count + 1))
@@ -725,9 +750,9 @@ if [ "$DEBUG_MODE" != true ]; then
         [ $count -ge 3 ] && break # Exit if no browser process for at least 2*5=10 seconds
         sleep 5
     done
-    bashio::log.info "No $BROWSER instances remaining... exiting 'run.sh'..."
+    bashio::log.info "No $BROWSER_PROCESS instances remaining... exiting 'run.sh'..."
 
 else  ### Debug mode
-    bashio::log.info "Entering debug mode (X & $WINMGR window manager but no $BROWSER browser)..."
+    bashio::log.info "Entering debug mode (X & $WINMGR window manager but no browser)..."
     exec sleep infinite
 fi
