@@ -730,12 +730,14 @@ if [ "$DEBUG_MODE" != true ]; then
     # ----- NEW: Dynamic Browser Launch Logic -----
     if [ "${BROWSER,,}" = "chromium" ] && command -v chromium-browser >/dev/null 2>&1; then
         bashio::log.info "Launching Chromium browser..."
-        BROWSER_PROCESS="chromium-browser"
         
-        # Convert HAOSKiosk ZOOM_LEVEL (e.g., 100) to Chromium scale factor (e.g., 1.0)
+        # Change monitor variable to catch /usr/lib/chromium/chromium paths
+        BROWSER_PROCESS="chromium"
+        
+       # Convert HAOSKiosk ZOOM_LEVEL (e.g., 100) to Chromium scale factor (e.g., 1.0)
         CHROMIUM_ZOOM=$(awk "BEGIN {print $ZOOM_LEVEL/100}")
 
-        # Note: --enable-logging=stderr pushes all JavaScript/Card errors to the HA Add-on Log
+        # Launch Chromium and intercept its logs to find the Browser Mod ID
         chromium-browser \
             --kiosk \
             --start-fullscreen \
@@ -747,10 +749,28 @@ if [ "$DEBUG_MODE" != true ]; then
             --disable-session-crashed-bubble \
             --autoplay-policy=no-user-gesture-required \
             --force-device-scale-factor="$CHROMIUM_ZOOM" \
+            --user-data-dir=/tmp/chromium \
+            --disable-features=Accessibility \
             --enable-logging=stderr \
-            "$HA_URL/$HA_DASHBOARD" &
+            "$HA_URL/$HA_DASHBOARD" 2>&1 | while read -r line; do
+                
+                # Pass the standard log line through
+                echo "$line"
+                
+                # If the line contains a Browser Mod ID, highlight it
+                if [[ "$line" == *"BrowserID: browser_mod_"* ]]; then
+                    BM_ID=$(echo "$line" | grep -oE 'browser_mod_[a-f0-9_]+')
+                    if [ -n "$BM_ID" ]; then
+                        echo ""
+                        bashio::log.green "============================================================"
+                        bashio::log.green "🌟 BROWSER MOD ID DETECTED: $BM_ID 🌟"
+                        bashio::log.green "============================================================"
+                        echo ""
+                    fi
+                fi
+        done &
         
-        bashio::log.info "Launched Chromium (PID=$!)"
+        bashio::log.info "Launched Chromium..."
     else
         if [ "${BROWSER,,}" = "chromium" ]; then
             bashio::log.warning "Chromium requested but not installed. Falling back to Luakit."
@@ -763,7 +783,8 @@ if [ "$DEBUG_MODE" != true ]; then
     # ----- NEW: Updated Process Monitor -----
     count=0
     while true; do  # Wait for all browser processes to exit
-        if pgrep -f -- "^$BROWSER_PROCESS " > /dev/null 2>&1; then
+        # REMOVED the strict "^" and space so it matches absolute paths
+        if pgrep -f "$BROWSER_PROCESS" > /dev/null 2>&1; then
             count=0
         else
             count=$((count + 1))
