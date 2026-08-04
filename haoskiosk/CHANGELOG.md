@@ -3,8 +3,13 @@
 - Install slower to add chrome, 1-5 minutes. I can't fix that.
 ## v1.3.2.3 - August 2026
 
-- BrowserMod Support - Log file outputs ID for automation/script actions
-- Dynamic x64/arm browser support
+- **Chromium Support:** Added dynamic architecture detection to install and run Chromium with GPU hardware acceleration on x86_64 hosts, vastly improving rendering of heavy dashboards and WebRTC streams.
+- **Browser Toggle:** Added UI configuration option to seamlessly switch between Chromium and Luakit engines.
+- **Browser Mod Integration:** Added real-time log parsing to intercept and broadcast the `browser_mod` ID natively in the Add-on UI logs.
+### Fixed
+- **Touchscreen Rotation:** Corrected the X11 `TransformationMatrix` coordinates for standard left/right display rotation.
+- **Process Monitoring:** Fixed a bug where the `run.sh` script would incorrectly time out and kill the Chromium browser process.
+- **Log Spam:** Silenced AT-SPI accessibility warnings and DBus errors when running Chromium inside the Alpine Docker container.
 
 ## v1.3.2.2 - August 2026
 
