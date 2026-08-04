@@ -718,6 +718,11 @@ if [ "$DEBUG_MODE" != true ]; then
     if [ "${BROWSER,,}" = "chromium" ] && command -v chromium-browser >/dev/null 2>&1; then
         bashio::log.info "Launching Chromium browser..."
         BROWSER_PROCESS="chromium-browser"
+        
+        # Convert HAOSKiosk ZOOM_LEVEL (e.g., 100) to Chromium scale factor (e.g., 1.0)
+        CHROMIUM_ZOOM=$(awk "BEGIN {print $ZOOM_LEVEL/100}")
+
+        # Note: --enable-logging=stderr pushes all JavaScript/Card errors to the HA Add-on Log
         chromium-browser \
             --kiosk \
             --start-fullscreen \
@@ -728,7 +733,10 @@ if [ "$DEBUG_MODE" != true ]; then
             --ignore-certificate-errors \
             --disable-session-crashed-bubble \
             --autoplay-policy=no-user-gesture-required \
+            --force-device-scale-factor="$CHROMIUM_ZOOM" \
+            --enable-logging=stderr \
             "$HA_URL/$HA_DASHBOARD" &
+        
         bashio::log.info "Launched Chromium (PID=$!)"
     else
         if [ "${BROWSER,,}" = "chromium" ]; then
