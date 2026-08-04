@@ -1,8 +1,10 @@
 ################################################################################
 # Add-on: HAOS Kiosk Display (haoskiosk)
 # File: Dockerfile
-# Version: 1.3.1.1
+# Version: 1.3.2.2
 # Original Copyright Jeff Kosowsky
+# updated to support fonts, chrome, remove static lua version from alpine that is not used by HA.
+# Corrections by TrooperThorn
 # Date: August 2026
 ################################################################################
 
