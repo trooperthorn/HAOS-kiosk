@@ -1,16 +1,17 @@
-# HAOS-kiosk v 1.3.2.2 Chromium release.
+# HAOS-kiosk v 1.3.2.3 Chromium release with support for BrowserMod
 
 Display HA dashboards in kiosk mode directly on your HAOS server.
 
 ## Original Author: Jeff Kosowsky (version: 1.3.2, April 2026)
-## Updated for x86 AMD64 TrooperThorn (v: 1.3.2.1 August 2026)
+## Updated for x86 AMD64 TrooperThorn (v: 1.3.2.3 August 2026)
 
 ## Description
 
 Launches X-Windows on local HAOS server followed by OpenBox window manager
-and Luakit browser starting with your configured default Home Assistant
+and Chrome or Luakit browser starting with your configured default Home Assistant
 dashboard.
 
+- Designed for Touchscreens directly attached to Home Assistant Server.
 - Standard mouse, touchscreen, and keyboard interactions should work
   automatically as well as audio
 - Supports touchscreens gestures, screen rotation, and onscreen keyboard
@@ -46,7 +47,7 @@ ______________________________________________________________________
      address** of your Home Assistant instance first) *or* go to the
      **Add-on store**.
    - Click **⋮ → Repositories**
-   - Fill in `https://github.com/puterboy/HAOS-kiosk`
+   - Fill in `https://github.com/trooperthorn/HAOS-kiosk`
    - Click **Add → Close**
 
 2. Click on the Add-on, press **Install** and wait until the Add-on is
@@ -60,12 +61,15 @@ ______________________________________________________________________
 **If you are having trouble installing the add-on or getting displays and
 touchscreens working, please see the **TROUBLESHOOTING** section below as
 well as the github issues page
-(https://github.com/puterboy/HAOS-kiosk/issues) as many common issues have
+(https://github.com/trooperthorn/HAOS-kiosk/issues) as many common issues have
 already been addressed and resolved**
 
 ______________________________________________________________________
 
 ## Configuration Options
+
+Select Chrome or Lua. 
+USE Lua if arm32.
 
 ### HA Username [required]
 
