@@ -68,28 +68,33 @@ privileged:
   - SYS_ADMIN
 
 options:
+  browser: "chromium"
+  # Screen Hygene
+  rotate_display: "normal"
+  output_number: 1
+  screen_timeout: 0
+  login_delay: 1.0
+  browser_refresh: 43200
+  # Configure Home Assistant
   ha_url: "http://localhost:8123"
   ha_dashboard: ""
-  login_delay: 1.0
-  zoom_level: 100
-  browser_refresh: 600
-  screen_timeout: 0
-  output_number: 1
   dark_mode: true
   ha_theme: ""
   ha_sidebar: "none"
-  rotate_display: "normal"
-  map_touch_inputs: true
-  keyboard_layout: us
-  cursor_timeout: 5
-  onscreen_keyboard: true
-  save_onscreen_config: true
-  xorg_conf: ""
-  xorg_append_replace: "append"
-  audio_sink: "auto"
+  # COMMS with HA
   rest_ip: "127.0.0.1"
   rest_port: 8080
   rest_bearer_token: ""
+  #Should not usually be modified.
+  zoom_level: 100
+  map_touch_inputs: true
+  onscreen_keyboard: true
+  keyboard_layout: us
+  cursor_timeout: 5
+  save_onscreen_config: true
+  audio_sink: "auto"
+  xorg_conf: ""
+  xorg_append_replace: "append"
   gestures:
     - '"1_ANY_1_CORNER_TOPRIGHT": {"cmds": "kiosk.toggle_keyboard", "msg": "Toggling Onboard keyboard..."}'
     - '"[Left]_MOUSE_3_CLICK": {"cmds": "kiosk.toggle_keyboard", "msg": "Toggling Onboard keyboard..."}'
@@ -102,36 +107,38 @@ options:
     - '"2_TOUCH_3_TAP": {"cmds": "kiosk.launch_url", "msg": "Restore default dashboard: HA_URL/HA_DASHBOARD"}'
     - '"2_TOUCH_4_TAP": {"cmds": [["kiosk.launch_url", "www.google.com"]], "msg": "Open Google search"}'
   command_whitelist: "xset|xdotool|luakit"
+  # IF Browser MOD is in use, only need xset|luakit or xset|chromium
   vnc_server: ""
   debug_mode: false
 
 schema:
+  browser: "list(luakit|chromium)"
+  rotate_display: list(normal|left|right|inverted)
   ha_username: str
   ha_password: password
   ha_url: str
   ha_dashboard: str?
+  browser_refresh: int(0,)
+  ha_sidebar: list(full|narrow|none)
+  ha_theme: str?
+  dark_mode: bool
   login_delay: float(0,)
   zoom_level: int(10,1000)
-  browser_refresh: int(0,)
   screen_timeout: int(0,)
   output_number: int(1,2)
-  dark_mode: bool
-  ha_theme: str?
-  ha_sidebar: list(full|narrow|none)
-  rotate_display: list(normal|left|right|inverted)
   map_touch_inputs: bool
   cursor_timeout: int
   keyboard_layout: str
   onscreen_keyboard: bool
   save_onscreen_config: bool
-  xorg_conf: str?
-  xorg_append_replace: list(append|replace)
   audio_sink: list(auto|hdmi|usb|none)
   rest_ip: str
   rest_port: int(1024,49151)
   rest_bearer_token: password
   gestures:
     - str
+  xorg_conf: str?
+  xorg_append_replace: list(append|replace)
   command_whitelist: str
   vnc_server: password
   debug_mode: bool
