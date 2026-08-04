@@ -1,4 +1,17 @@
 # Changelog
+## KNOWN ISSUES
+- Install slower to add chrome, 1-5 minutes. I can't fix that.
+## v1.3.2.3 - August 2026
+
+- BrowserMod Support - Log file outputs ID for automation/script actions
+- Dynamic x64/arm browser support
+
+## v1.3.2.2 - August 2026
+
+- Chrome Support
+- Drop Security to min
+- update xorg to correct screen rotation touch not working.
+- added theme for screens
 
 ## v1.3.2 - April 2026
 
