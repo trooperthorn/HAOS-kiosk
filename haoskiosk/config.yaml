@@ -83,7 +83,7 @@ options:
   ha_sidebar: "none"
   # COMMS with HA
   rest_ip: "127.0.0.1"
-  rest_port: 8080
+  rest_port: 8073
   rest_bearer_token: ""
   #Should not usually be modified.
   zoom_level: 100
