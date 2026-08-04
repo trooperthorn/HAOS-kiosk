@@ -329,13 +329,26 @@ else
 fi
 
 # ----- NEW: Universal Dynamic Touchscreen Rotation -----
+# FIX FROM ORIGINAL, you got it backwards.
 bashio::log.info "Configuring touch inputs for ROTATE_DISPLAY=${ROTATE_DISPLAY}..."
 
 case "${ROTATE_DISPLAY,,}" in
-    right) TOUCH_MATRIX="0 1 0 -1 0 1 0 0 1" ;;
-    left) TOUCH_MATRIX="0 -1 1 1 0 0 0 0 1" ;;
-    inverted) TOUCH_MATRIX="-1 0 1 0 -1 1 0 0 1" ;;
-    *) TOUCH_MATRIX="1 0 0 0 1 0 0 0 1" ;;
+    right) 
+        # Standard 90 degrees Clockwise
+        TOUCH_MATRIX="0 -1 1 1 0 0 0 0 1" 
+        ;;
+    left) 
+        # Standard 90 degrees Counter-Clockwise
+        TOUCH_MATRIX="0 1 0 -1 0 1 0 0 1" 
+        ;;
+    inverted) 
+        # Standard 180 degrees
+        TOUCH_MATRIX="-1 0 1 0 -1 1 0 0 1" 
+        ;;
+    *) 
+        # Normal (0 degrees)
+        TOUCH_MATRIX="1 0 0 0 1 0 0 0 1" 
+        ;;
 esac
 
 cat <<EOF >> /etc/X11/xorg.conf
