@@ -1,9 +1,9 @@
 ################################################################################
 # Add-on: HAOS Kiosk Display (haoskiosk)
 # File: Dockerfile
-# Version: 1.3.1
-# Copyright Jeff Kosowsky
-# Date: April 2026
+# Version: 1.3.1.1
+# Original Copyright Jeff Kosowsky
+# Date: August 2026
 ################################################################################
 
 ARG BUILD_FROM=ghcr.io/home-assistant/base:latest
@@ -65,6 +65,21 @@ RUN apk update && apk add --no-cache \
 # Browser
 #    luakit \
    && apk add --no-cache --repository=https://dl-cdn.alpinelinux.org/alpine/v3.21/community luakit=2.3.6-r0 \
+   # ... (previous apk add commands for xorg, etc) ...
+   && ARCH=$(uname -m) \
+   && echo "Building for architecture: $ARCH" \
+   && if [ "$ARCH" = "x86_64" ]; then \
+        # ----- x86_64 (Intel/AMD) -----
+        # Pull latest Chromium and Luakit directly from standard repos
+       apk add --no-cache chromium luakit; \
+   elif [ "$ARCH" = "aarch64" ]; then \
+        # ----- aarch64 (Raspberry Pi 4/5) -----
+       apk add --no-cache chromium luakit; \
+   else \
+        # ----- Fallback for older 32-bit ARM (armv7) -----
+       echo "Falling back to Luakit-only for $ARCH" \
+       && apk add --no-cache luakit; \
+   fi \
    && rm -rf /var/cache/apk/*
 
 #===============================================================================
