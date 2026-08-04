@@ -4,6 +4,8 @@ Display HA dashboards in kiosk mode directly on your HAOS server.
 
 ## Author: TrooperThorn (version: 1.3.2.1, August 2026)
 
+Please see the display-kiosk-theme.yaml for a theme specific for rotated displays. This will fix the popup issue with some themes.
+
 ## Description
 
 Launches X-Windows on local HAOS server followed by OpenBox window manager
