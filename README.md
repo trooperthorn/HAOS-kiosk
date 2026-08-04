@@ -1,4 +1,4 @@
-# HAOS-kiosk
+# HAOS-kiosk v 1.3.2.2 Chromium release.
 
 Display HA dashboards in kiosk mode directly on your HAOS server.
 
