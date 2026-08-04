@@ -355,21 +355,25 @@ cat /etc/X11/xorg.conf
 printf '%*s\n' 80 '' | tr ' ' '#'  #Trailer
 echo "."
 
-# ----- NEW: Clean up stale lock files before starting -----
-bashio::log.info "Cleaning up any stale X11 lock files and sockets..."
-rm -f /tmp/.X0-lock
-rm -rf /tmp/.X11-unix/X0
+# ----- NEW: Shift to DISPLAY=:1 to avoid host socket collisions -----
+export DISPLAY=:1
+
+bashio::log.info "Cleaning up any stale X11 lock files and sockets for $DISPLAY..."
+rm -f /tmp/.X1-lock
+rm -rf /tmp/.X11-unix/X1
 
 # ----- NEW: Setup Xorg log streaming -----
 mkdir -p /var/log
-touch /var/log/Xorg.0.log
-tail -f /var/log/Xorg.0.log &
+touch /var/log/Xorg.1.log
+tail -f /var/log/Xorg.1.log &
 TAIL_PID=$!
 
 bashio::log.info "Starting X on DISPLAY=$DISPLAY..."
 NOCURSOR=""
 [ "$CURSOR_TIMEOUT" -lt 0 ] && NOCURSOR="-nocursor"  #No cursor if <0
-Xorg $NOCURSOR </dev/null 2>&1 | grep -v "Could not resolve keysym XF86\|Errors from xkbcomp are not fatal\|XKEYBOARD keymap compiler (xkbcomp) reports" &
+
+# NOTE: We pass $DISPLAY directly to Xorg so it binds to :1 instead of :0
+Xorg $DISPLAY $NOCURSOR -logfile /var/log/Xorg.1.log </dev/null 2>&1 | grep -v "Could not resolve keysym XF86\|Errors from xkbcomp are not fatal\|XKEYBOARD keymap compiler (xkbcomp) reports" &
 
 XSTARTUP=30
 for ((i=0; i<=XSTARTUP; i++)); do
@@ -390,9 +394,9 @@ fi
 
 if ! xset q >/dev/null 2>&1; then
     bashio::log.error "Error: X server failed to start within $XSTARTUP seconds."
-    # ----- NEW: Dump the log if X fails so you can see exactly why -----
-    bashio::log.error "Dumping /var/log/Xorg.0.log to UI:"
-    cat /var/log/Xorg.0.log
+    # ----- NEW: Dump the correct log if X fails -----
+    bashio::log.error "Dumping /var/log/Xorg.1.log to UI:"
+    cat /var/log/Xorg.1.log
     kill $TAIL_PID 2>/dev/null || true
     exit 1
 fi
