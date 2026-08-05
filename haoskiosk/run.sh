@@ -205,7 +205,8 @@ echo "export DBUS_SESSION_BUS_ADDRESS='$DBUS_SESSION_BUS_ADDRESS'" >> "$HOME/.pr
 #       in particular will block HAOS updates
 # This preserves the original developer's logic for Raspberry Pi/ARM devices but safely bypasses the /dev/tty0 deletion for your amd64 (x86_64) machine.
 if [ -e "/dev/tty0" ]; then
-    if [ "$ARCH" = "amd64" ] || [ "$ARCH" = "i386" ]; then
+    # Safely evaluate ARCH, defaulting to amd64 if the variable is unbound
+    if [ "${ARCH:-amd64}" = "amd64" ] || [ "${ARCH:-amd64}" = "i386" ]; then
         bashio::log.info "amd64 architecture detected: Skipping /dev/tty0 deletion to prevent host X11 conflicts."
     else
         bashio::log.info "Attempting to remount /dev as 'rw' so we can (temporarily) delete /dev/tty0..."
@@ -214,7 +215,7 @@ if [ -e "/dev/tty0" ]; then
             bashio::log.error "Failed to remount /dev as read-write..."
             exit 1
         fi
-        if  ! rm -f /dev/tty0 ; then
+        if ! rm -f /dev/tty0 ; then
             bashio::log.error "Failed to delete /dev/tty0..."
             exit 1
         fi
